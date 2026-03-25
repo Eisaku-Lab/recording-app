@@ -19,13 +19,19 @@ class SummaryController extends Controller
         }
 
         try {
-            // ① Whisperで文字起こし
-            $transcriptionResponse = $client->audio()->transcribe([
-                'model'    => 'whisper-1',
-                'file'     => fopen($filePath, 'r'),
-                'language' => 'ja',
-            ]);
-            $transcription = $transcriptionResponse->text;
+// ファイルの存在確認ログ
+\Log::info('File path: ' . $filePath);
+\Log::info('File exists: ' . (file_exists($filePath) ? 'yes' : 'no'));
+\Log::info('File size: ' . (file_exists($filePath) ? filesize($filePath) : 0));
+
+// ① Whisperで文字起こし
+$transcriptionResponse = $client->audio()->transcribe([
+    'model'    => 'whisper-1',
+    'file'     => fopen($filePath, 'r'),
+    'language' => 'ja',
+    'response_format' => 'text',
+]);
+$transcription = $transcriptionResponse->text ?? $transcriptionResponse;
 
             // ② リクエストから設定を取得
             $style  = $request->input('summary_style',  $recording->summary_style);
