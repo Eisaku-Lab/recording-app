@@ -127,7 +127,22 @@
 </head>
 
 <body>
-
+ {{-- ヘッダー：ユーザー名とログアウトボタン --}}
+    <div style="background:white; padding:12px 20px; margin-bottom:20px;
+                box-shadow:0 1px 4px rgba(0,0,0,0.1); display:flex;
+                justify-content:space-between; align-items:center;">
+        <span style="font-size:14px; color:#666;">
+            ようこそ、{{ session('user_name') }}さん
+        </span>
+        <form method="POST" action="/logout" style="margin:0;">
+            @csrf
+            <button type="submit" style="background:#ff3b30; color:white;
+                    border:none; border-radius:6px; padding:6px 14px;
+                    font-size:13px; cursor:pointer;">
+                ログアウト
+            </button>
+        </form>
+    </div>
     <h1>🎤 録音一覧</h1>
 
     <div class="settings-panel">

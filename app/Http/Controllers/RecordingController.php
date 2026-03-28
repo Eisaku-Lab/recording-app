@@ -7,13 +7,17 @@ use Illuminate\Http\Request;
 
 class RecordingController extends Controller
 {
-    // Web画面用：録音一覧をブラウザに表示する
-    public function index()
-    {
-        $recordings = Recording::latest()->get();
-        return view('recordings.index', compact('recordings'));
+// Web画面用：録音一覧をブラウザに表示する
+public function index()
+{
+    // セッションチェック：ログインしていない場合はログイン画面へ
+    if (!session('user_id')) {
+        return redirect('/login');
     }
 
+    $recordings = Recording::latest()->get();
+    return view('recordings.index', compact('recordings'));
+}
     // API用：録音一覧をJSONで返す
     public function list()
     {
