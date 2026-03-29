@@ -24,14 +24,21 @@ class SummaryController extends Controller
 \Log::info('File exists: ' . (file_exists($filePath) ? 'yes' : 'no'));
 \Log::info('File size: ' . (file_exists($filePath) ? filesize($filePath) : 0));
 
-// ① Whisperで文字起こし
+// ① 拡張子付きの一時ファイルを作成する
+$ext = pathinfo($recording->original_name, PATHINFO_EXTENSION) ?: 'm4a';
+$tempPath = tempnam(sys_get_temp_dir(), 'whisper_') . '.' . $ext;
+copy($filePath, $tempPath);
+
+// ② Whisperで文字起こし
 $transcriptionResponse = $client->audio()->transcribe([
-    'model'           => 'whisper-1',
-    'file'            => new \CURLFile($filePath, 'audio/mp4', basename($filePath)),
-    'language'        => 'ja',
-    'response_format' => 'text',
+    'model'    => 'whisper-1',
+    'file'     => fopen($tempPath, 'r'),
+    'language' => 'ja',
 ]);
-$transcription = $transcriptionResponse->text ?? $transcriptionResponse;
+$transcription = $transcriptionResponse->text;
+
+// ③ 一時ファイルを削除する
+@unlink($tempPath);
 
             // ② リクエストから設定を取得
             $style  = $request->input('summary_style',  $recording->summary_style);
