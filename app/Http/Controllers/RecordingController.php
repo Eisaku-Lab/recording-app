@@ -26,21 +26,32 @@ public function index()
     }
 
     // API用：録音ファイルを受け取って保存する
-    public function upload(Request $request)
-    {
-        $file = $request->file('audio');
-        $path = $file->store('recordings', 'local');
+public function upload(Request $request)
+{
+    $file = $request->file('audio');
 
-        $recording = Recording::create([
-            'file_path'     => $path,
-            'original_name' => $file->getClientOriginalName(),
-        ]);
-
-        return response()->json([
-            'message' => '保存しました',
-            'id'      => $recording->id,
-        ]);
+    if (!$file) {
+        \Log::info('ファイルなし');
+        return response()->json(['message' => 'ファイルが受信できませんでした'], 422);
     }
+
+    \Log::info('受信ファイルサイズ: ' . $file->getSize() . ' bytes');
+    \Log::info('受信ファイル名: ' . $file->getClientOriginalName());
+    \Log::info('MIMEタイプ: ' . $file->getMimeType());
+
+    $path = $file->store('recordings', 'local');
+
+    $recording = Recording::create([
+        'file_path'     => $path,
+        'original_name' => $file->getClientOriginalName(),
+    ]);
+
+    return response()->json([
+        'message' => '保存しました',
+        'id'      => $recording->id,
+    ]);
+}
+
 // 録音データを削除する
 public function destroy($id)
 {
