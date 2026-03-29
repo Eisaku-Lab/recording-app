@@ -384,6 +384,84 @@
     transition: all 0.15s;
 }
 
+/* アップロードエリア */
+.upload-panel {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+.upload-area {
+    border: 2px dashed #e5e7eb;
+    border-radius: 10px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.upload-area:hover, .upload-area.dragover {
+    border-color: #1a56db;
+    background: #eff6ff;
+}
+.upload-area input[type="file"] {
+    display: none;
+}
+.upload-area-text {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+.upload-area-sub {
+    font-size: 11px;
+    color: #9ca3af;
+}
+.btn-upload-select {
+    display: inline-block;
+    padding: 7px 16px;
+    background: #1a56db;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 10px;
+}
+.btn-upload-select:hover { background: #1648c0; }
+.upload-progress {
+    display: none;
+    margin-top: 12px;
+}
+.progress-bar-wrap {
+    background: #f3f4f6;
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 6px;
+    background: #1a56db;
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.2s;
+}
+.upload-status {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 6px;
+    text-align: center;
+}
+.upload-success {
+    font-size: 12px;
+    color: #16a34a;
+    margin-top: 6px;
+    text-align: center;
+}
+
+
 .btn-delete:hover {
     background: #fef2f2;
     border-color: #ef4444;
@@ -510,6 +588,36 @@
 
         {{-- コンテンツ --}}
         <div class="content">
+
+{{-- アップロードパネル --}}
+<div class="upload-panel">
+    <div class="settings-header" style="margin-bottom:14px;">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="#6b7280">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+        </svg>
+        <span class="settings-title">録音ファイルをアップロード</span>
+    </div>
+
+    <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()"
+         ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <input type="file" id="file-input" accept=".m4a,.wav,.mp3,.mp4,.aac"
+               onchange="onFileSelect(this.files)">
+        <button class="btn-upload-select" onclick="event.stopPropagation(); document.getElementById('file-input').click()">
+            ファイルを選択
+        </button>
+        <div class="upload-area-text">またはここにファイルをドラッグ&amp;ドロップ</div>
+        <div class="upload-area-sub">対応形式：m4a / wav / mp3 / mp4 / aac</div>
+    </div>
+
+    <div class="upload-progress" id="upload-progress">
+        <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="upload-status" id="upload-status">アップロード中...</div>
+    </div>
+    <div class="upload-success" id="upload-success" style="display:none;"></div>
+</div>
 
             {{-- 要約設定パネル --}}
             <div class="settings-panel">
@@ -693,6 +801,76 @@ function deleteRecording(id) {
         delBtn.textContent = 'エラー';
         delBtn.disabled = false;
     });
+}
+// ドラッグ&ドロップ
+function onDragOver(e) {
+    e.preventDefault();
+    document.getElementById('upload-area').classList.add('dragover');
+}
+function onDragLeave(e) {
+    document.getElementById('upload-area').classList.remove('dragover');
+}
+function onDrop(e) {
+    e.preventDefault();
+    document.getElementById('upload-area').classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) onFileSelect(files);
+}
+
+// ファイル選択時
+function onFileSelect(files) {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    uploadFile(file);
+}
+
+// アップロード処理
+function uploadFile(file) {
+    const progress = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const status = document.getElementById('upload-status');
+    const success = document.getElementById('upload-success');
+
+    // 表示リセット
+    success.style.display = 'none';
+    progress.style.display = 'block';
+    progressBar.style.width = '0%';
+    status.textContent = 'アップロード中...';
+
+    const formData = new FormData();
+    formData.append('audio', file);
+
+    const xhr = new XMLHttpRequest();
+
+    // 進捗バー更新
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            progressBar.style.width = pct + '%';
+            status.textContent = `アップロード中... ${pct}%`;
+        }
+    };
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            progress.style.display = 'none';
+            success.style.display = 'block';
+            success.textContent = `「${file.name}」をアップロードしました。ページを更新してください。`;
+            document.getElementById('file-input').value = '';
+            // 2秒後に自動リロード
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            status.textContent = 'アップロードに失敗しました';
+        }
+    };
+
+    xhr.onerror = function() {
+        status.textContent = 'エラーが発生しました';
+    };
+
+    xhr.open('POST', '/api/recordings/upload');
+    xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+    xhr.send(formData);
 }
     </script>
 
