@@ -41,4 +41,20 @@ public function index()
             'id'      => $recording->id,
         ]);
     }
+// 録音データを削除する
+public function destroy($id)
+{
+    $recording = Recording::findOrFail($id);
+
+    // 音声ファイルも削除する
+    $filePath = storage_path('app/private/' . $recording->file_path);
+    if (file_exists($filePath)) {
+        unlink($filePath);
+    }
+
+    // DBからレコードを削除
+    $recording->delete();
+
+    return response()->json(['message' => '削除しました']);
+}
 }

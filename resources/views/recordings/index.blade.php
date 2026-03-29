@@ -371,6 +371,23 @@
             cursor: pointer;
             transition: background 0.15s;
         }
+.btn-delete {
+    padding: 7px 14px;
+    background: none;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-delete:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+}
 
         .btn-summarize:hover { background: #1648c0; }
 
@@ -563,18 +580,26 @@
                                 </div>
                             </div>
                             <div class="recording-badges">
-                                @if ($recording->summary)
-                                    <span class="tag tag-green">要約済み</span>
-                                    <span class="tag tag-blue">{{ $recording->summary_scene }}</span>
-                                @else
-                                    <button
-                                        class="btn-summarize"
-                                        id="btn-{{ $recording->id }}"
-                                        onclick="summarize({{ $recording->id }})">
-                                        要約する
-                                    </button>
-                                @endif
-                            </div>
+{{-- 削除ボタン（常に表示） --}}
+    <button
+        class="btn-delete"
+        id="del-{{ $recording->id }}"
+        onclick="deleteRecording({{ $recording->id }})">
+        削除
+    </button>
+
+    @if ($recording->summary)
+        <span class="tag tag-green">要約済み</span>
+        <span class="tag tag-blue">{{ $recording->summary_scene }}</span>
+    @else
+        <button
+            class="btn-summarize"
+            id="btn-{{ $recording->id }}"
+            onclick="summarize({{ $recording->id }})">
+            要約する
+        </button>
+    @endif
+</div>
                         </div>
 
                         @if ($recording->summary)
@@ -639,6 +664,36 @@
                 btn.disabled = false;
             });
         }
+function deleteRecording(id) {
+    if (!confirm('この録音データを削除しますか？')) return;
+
+    const card = document.getElementById('del-' + id).closest('.recording-card');
+    const delBtn = document.getElementById('del-' + id);
+    delBtn.disabled = true;
+    delBtn.textContent = '削除中...';
+
+    fetch('/api/recordings/' + id, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('削除失敗');
+        return response.json();
+    })
+    .then(() => {
+        // カードをフェードアウトして削除
+        card.style.transition = 'opacity 0.3s';
+        card.style.opacity = '0';
+        setTimeout(() => card.remove(), 300);
+    })
+    .catch(() => {
+        delBtn.textContent = 'エラー';
+        delBtn.disabled = false;
+    });
+}
     </script>
 
 </body>
