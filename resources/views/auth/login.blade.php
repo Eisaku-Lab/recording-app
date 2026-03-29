@@ -213,7 +213,7 @@
             </div>
             <div class="feature-item">
                 <div class="feature-dot"></div>
-                GPT-4oによる自動要約・整理
+                ChatGPTによる自動要約・整理
             </div>
             <div class="feature-item">
                 <div class="feature-dot"></div>
@@ -246,8 +246,6 @@
                 <button type="submit" class="btn-login">ログイン</button>
             </form>
 
-            <div class="divider"></div>
-            <div class="login-footer">録音管理システム v1.0</div>
         </div>
     </div>
 
