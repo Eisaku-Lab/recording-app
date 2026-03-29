@@ -1,59 +1,78 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+①課題名
+音声録音・AI要約システム
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+②課題内容（どんな作品か）
+Apple Watchで録音した音声データを、AIが自動で文字起こし・要約するWebアプリケーション。
 
-## About Laravel
+【主な機能】
+- Apple Watch録音：ワンタップで録音開始・停止し、自動でサーバーに送信
+- 音源アップロード機能
+- AI文字起こし：OpenAI Whisperによる高精度な日本語音声認識
+- AI要約：GPT-4oによる自動要約生成
+- 要約設定：スタイル（箇条書き/文章/キーワード）・長さ・シーン別にカスタマイズ可能
+- ログイン認証：メールアドレス・パスワードによる管理者認証
+- 録音一覧管理：過去の録音データと要約結果の一覧表示・保存
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+③アプリのデプロイURL
+https://recording-app-production.up.railway.app
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+⑤工夫した点・こだわった点
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+アプリの制作意図
+- 介護・看護スタッフが訪問記録を音声で手軽に残せるツールを目指した
+- Apple Watchという手軽なデバイスからワンタップで録音できる使いやすさを重視
+- AIを活用することで記録作成の負担を大幅に削減する設計
 
-## Learning Laravel
+工夫した点
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+デザイン面
+- ビジネスツールらしいクリーンなUIデザイン
+    - ブルーをアクセントカラーに採用した視認性の高い配色
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- 要約設定
+    - スタイル・長さ・シーンを要約前に自由に選択可能
 
-## Laravel Sponsors
+- 要約結果の表示
+    - 要約済みバッジでステータスを一目で確認できる設計
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+機能面
+- Apple Watchアプリ
+    - AVFoundationを使った録音機能の実装
+    - multipart/form-dataでサーバーへの音声ファイル送信
 
-### Premium Partners
+- AI処理
+    - Whisper APIで音声→テキスト変換
+    - ChatGPT APIでシーン別プロンプトを生成して要約
+    - 文字起こし・要約結果をDBに保存
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- インフラ
+    - Railwayのボリューム機能で音声ファイルを永続化
+    - MariaDBによるデータ管理
 
-## Contributing
+⑥難しかった点・次回トライしたいこと（又は機能）
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+難しかった点
+- Railwayへのデプロイ
+    - MySQLの新しい認証方式がPHPと互換性がなく、MariaDBに切り替えて解決
+    - 音声ファイルがデプロイのたびに消える問題をRailwayのボリューム機能で解決
 
-## Code of Conduct
+- Apple Watch実機へのインストール
+    - Xcode 26と古いAppleWatchのバージョン不一致により接続にだいぶ苦労
+    - deployment targetの調整と新しいAppleWatch(watchOS 26.1対応)の実機に切り替えて解決
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- Laravel 11の仕様変更対応
+    - routes/api.phpがデフォルトで存在しないため、php artisan install:apiで別途作成が必要だった
+    - storage/app/private/への保存パス変更に対応
 
-## Security Vulnerabilities
+⑦フリー項目（感想、シェアしたいこと等なんでも）
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+制作の感想
+- フルスタック開発の難しさと楽しさ
+    - Apple Watch・Laravel・AIという3つの技術を連携させるのは難しかったが、すべてが繋がって動いた瞬間の達成感は大きかった
 
-## License
+- AIの可能性
+    - WhisperAPIとChatGPT APIを組み合わせることで、音声から記録を自動生成できることに感動した
+    - 介護・医療・ビジネスなど幅広い場面での活用可能性を感じた
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- インフラの重要性
+    - デプロイで多くのトラブルに遭遇したが、RailwayやMariaDBなどのクラウドサービスの仕組みと恩恵を深く理解できた
