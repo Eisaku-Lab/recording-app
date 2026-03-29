@@ -26,44 +26,21 @@ public function index()
     }
 
     // API用：録音ファイルを受け取って保存する
-public function upload(Request $request)
-{
-    $file = $request->file('audio');
+    public function upload(Request $request)
+    {
+        $file = $request->file('audio');
+        $path = $file->store('recordings', 'local');
 
-    // ファイルが存在しない場合
-    if (!$file) {
-        return response()->json(['message' => 'ファイルが受信できませんでした'], 422);
-    }
+        $recording = Recording::create([
+            'file_path'     => $path,
+            'original_name' => $file->getClientOriginalName(),
+        ]);
 
-    // ファイルサイズが小さすぎる場合（1KB以下は無効）
-    if ($file->getSize() < 1024) {
         return response()->json([
-            'message' => 'ファイルが正しく受信できませんでした（サイズ: ' . $file->getSize() . ' bytes）。PHPのアップロード制限を超えている可能性があります。'
-        ], 422);
+            'message' => '保存しました',
+            'id'      => $recording->id,
+        ]);
     }
-
-    // 25MB超はWhisper APIの上限を超えるためエラー
-    if ($file->getSize() > 25 * 1024 * 1024) {
-        return response()->json([
-            'message' => 'ファイルサイズが大きすぎます（25MB以下にしてください）'
-        ], 422);
-    }
-
-    $path = $file->store('recordings', 'local');
-
-    $recording = Recording::create([
-        'file_path'     => $path,
-        'original_name' => $file->getClientOriginalName(),
-    ]);
-
-    return response()->json([
-        'message' => '保存しました',
-        'id'      => $recording->id,
-    ]);
-}
-
-
-
 // 録音データを削除する
 public function destroy($id)
 {
