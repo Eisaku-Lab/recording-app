@@ -26,9 +26,9 @@ class SummaryController extends Controller
 
 // ① Whisperで文字起こし
 $transcriptionResponse = $client->audio()->transcribe([
-    'model'    => 'whisper-1',
-    'file'     => fopen($filePath, 'r'),
-    'language' => 'ja',
+    'model'           => 'whisper-1',
+    'file'            => new \CURLFile($filePath, 'audio/mp4', basename($filePath)),
+    'language'        => 'ja',
     'response_format' => 'text',
 ]);
 $transcription = $transcriptionResponse->text ?? $transcriptionResponse;
